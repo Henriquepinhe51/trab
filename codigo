@@ -1,0 +1,186 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_VOOS 100
+#define MAX_PASSAGENS 500
+
+typedef struct {
+    int codigo;
+    char origem[50];
+    char destino[50];
+    int assentos;
+    float preco;
+} Voo;
+
+
+typedef struct {
+    int idPassagem;
+    int codigoVoo;
+    char nomePassageiro[100];
+} Passagem;
+
+
+Voo voos[MAX_VOOS];
+int totalVoos = 0;
+
+Passagem passagens[MAX_PASSAGENS];
+int totalPassagens = 0;
+
+void cadastrarVoo() {
+    if (totalVoos >= MAX_VOOS) {
+        printf("\n[Erro] Limite de voos atingido!\n");
+        return;
+    }
+
+    Voo novoVoo;
+    novoVoo.codigo = totalVoos + 1; // Código automático sequencial
+
+    printf("\n--- Cadastrar Novo Voo --- \n");
+    printf("Cidade de Origem: ");
+    scanf(" %[^\n]s", novoVoo.origem);
+    
+    printf("Cidade de Destino: ");
+    scanf(" %[^\n]s", novoVoo.destino);
+    
+    printf("Quantidade de Assentos Disponíveis: ");
+    scanf("%d", &novoVoo.assentos);
+    
+    printf("Preço da Passagem (R$): ");
+    scanf("%f", &novoVoo.preco);
+
+    voos[totalVoos] = novoVoo;
+    totalVoos++;
+
+    printf("\n[Sucesso] Voo cadastrado com o código %d!\n", novoVoo.codigo);
+}
+
+// Função para listar todos os voos disponíveis
+void listarVoos() {
+    if (totalVoos == 0) {
+        printf("\n[Aviso] Nenhum voo cadastrado no momento.\n");
+        return;
+    }
+
+    printf("\n=================== LISTA DE VOOS DISPONÍVEIS ===================\n");
+    printf("Código\tOrigem\t\tDestino\t\tAssentos\tPreço\n");
+    printf("-----------------------------------------------------------------\n");
+    for (int i = 0; i < totalVoos; i++) {
+        printf("%d\t%-15s\t%-15s\t%d\t\tR$ %.2f\n", 
+            voos[i].codigo, 
+            voos[i].origem, 
+            voos[i].destino, 
+            voos[i].assentos, 
+            voos[i].preco);
+    }
+    printf("=================================================================\n");
+}
+
+void comprarPassagem() {
+    if (totalVoos == 0) {
+        printf("\n[Aviso] Não há voos disponíveis para compra.\n");
+        return;
+    }
+
+    listarVoos();
+
+    int codVoo;
+    printf("\nDigite o código do voo desejado: ");
+    scanf("%d", &codVoo);
+
+    // Buscar o voo
+    int indiceVoo = -1;
+    for (int i = 0; i < totalVoos; i++) {
+        if (voos[i].codigo == codVoo) {
+            indiceVoo = i;
+            break;
+        }
+    }
+
+    if (indiceVoo == -1) {
+        printf("\n[Erro] Voo não encontrado!\n");
+        return;
+    }
+
+    if (voos[indiceVoo].assentos <= 0) {
+        printf("\n[Erro] Infelizmente este voo está lotado (sem assentos disponíveis).\n");
+        return;
+    }
+
+    if (totalPassagens >= MAX_PASSAGENS) {
+        printf("\n[Erro] Limite de passagens emitidas atingido!\n");
+        return;
+    }
+
+    Passagem novaPassagem;
+    novaPassagem.idPassagem = totalPassagens + 1;
+    novaPassagem.codigoVoo = codVoo;
+
+    printf("Nome completo do Passageiro: ");
+    scanf(" %[^\n]s", novaPassagem.nomePassageiro);
+
+    // Decrementar assento do voo
+    voos[indiceVoo].assentos--;
+
+    // Salvar passagem
+    passagens[totalPassagens] = novaPassagem;
+    totalPassagens++;
+
+    printf("\n[Sucesso] Passagem emitida com sucesso! ID da Reserva: %d\n", novaPassagem.idPassagem);
+}
+
+void listarPassagens() {
+    if (totalPassagens == 0) {
+        printf("\n[Aviso] Nenhuma passagem foi emitida ainda.\n");
+        return;
+    }
+
+    printf("\n================== PASSAGENS / RESERVAS EMITIDAS ==================\n");
+    printf("ID Reserva\tCódigo Voo\tPassageiro\n");
+    printf("-------------------------------------------------------------------\n");
+    for (int i = 0; i < totalPassagens; i++) {
+        printf("%d\t\t%d\t\t%-30s\n", 
+            passagens[i].idPassagem, 
+            passagens[i].codigoVoo, 
+            passagens[i].nomePassageiro);
+    }
+    printf("===================================================================\n");
+}
+
+// Função Principal (Menu)
+int main() {
+    int opcao;
+
+    do {
+        printf("\n=== SISTEMA DE GERENCIAMENTO DE VOOS E PASSAGENS ===\n");
+        printf("1. Cadastrar Voo\n");
+        printf("2. Listar Voos\n");
+        printf("3. Comprar Passagem (Reservar)\n");
+        printf("4. Listar Passagens Vendidas\n");
+        printf("5. Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1:
+                cadastrarVoo();
+                break;
+            case 2:
+                listarVoos();
+                break;
+            case 3:
+                comprarPassagem();
+                break;
+            case 4:
+                listarPassagens();
+                break;
+            case 5:
+                printf("\nSaindo do sistema... Obrigado!\n");
+                break;
+            default:
+                printf("\n[Erro] Opção inválida! Tente novamente.\n");
+        }
+    } while (opcao != 5);
+
+    return 0;
+}
